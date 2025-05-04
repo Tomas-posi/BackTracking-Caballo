@@ -1,91 +1,85 @@
+import java.util.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
+public class TodasLasSoluciones{
 
-public class TodasLasSoluciones {
-
-    static final int N = 6;
+    static final int N = 6; // Tamaño del tablero (6x6 para pruebas)
     static int[][] tablero = new int[N][N];
-    static int totalSoluciones = 0;
-
+    
     // Movimientos posibles del caballo
-    static final int[] dx = {-2, -1, 1, 2, 2, 1, -1, -2};
-    static final int[] dy = {1, 2, 2, 1, -1, -2, -2, -1};
+    static int[] dx = {-2, -1, 1, 2, 2, 1, -1, -2};
+    static int[] dy = {1, 2, 2, 1, -1, -2, -2, -1};
+    
+    // Lista para guardar las soluciones encontradas
+    static ArrayList<int[][]> soluciones = new ArrayList<>();
 
-    public static void main(String[] args) {
-        // Inicializar tablero
+    public static void main(String[] args) throws InterruptedException {
+        // Inicializar tablero a 0
         for (int i = 0; i < N; i++)
             Arrays.fill(tablero[i], 0);
 
         // Posición inicial aleatoria
         Random rand = new Random();
-        int startX = rand.nextInt(N);
-        int startY = rand.nextInt(N);
+        int x = rand.nextInt(N);
+        int y = rand.nextInt(N);
+        tablero[x][y] = 1; // Primer paso
 
-        System.out.println("Posición inicial: (" + startX + ", " + startY + ")");
-
-        // Marcar la primera casilla
-        tablero[startX][startY] = 1;
-
-        long inicio = System.currentTimeMillis();
-
-        // Comenzar backtracking
-        resolver(startX, startY, 2);
-
-        long fin = System.currentTimeMillis();
-
-        System.out.println("Total de soluciones: " + totalSoluciones);
-        System.out.println("Tiempo de ejecución: " + (fin - inicio) + " ms");
+        // Llamar a la función de backtracking para encontrar todas las soluciones
+        backtrack(x, y, 2);
+        
+        // Mostrar todas las soluciones encontradas
+        System.out.println("Número de soluciones encontradas: " + soluciones.size());
+        for (int[][] solucion : soluciones) {
+            imprimirTablero(solucion);
+            System.out.println("======================");
+        }
     }
 
-    static void resolver(int x, int y, int paso) {
-        if (paso > N * N) {
-            totalSoluciones++;
+    // Función de backtracking para encontrar todas las soluciones
+    static void backtrack(int x, int y, int paso) {
+
+        
+        // Si hemos recorrido todas las casillas, es una solución válida
+        if (paso == N * N + 1) {
+            soluciones.add(clonarTablero()); // Guardar la solución
+            System.out.println("Solución encontrada:");
+            imprimirTablero(tablero); // Mostrar la solución encontrada
             return;
         }
 
-        List<int[]> movimientosOrdenados = generarMovimientosOrdenados(x, y);
-
-        for (int[] move : movimientosOrdenados) {
-            int nx = move[0];
-            int ny = move[1];
-            tablero[nx][ny] = paso;
-            resolver(nx, ny, paso + 1);
-            tablero[nx][ny] = 0; // backtrack
-        }
-    }
-
-    // Genera los movimientos válidos desde (x, y) ordenados por menor grado (estilo Warnsdorff)
-    static List<int[]> generarMovimientosOrdenados(int x, int y) {
-        List<int[]> moves = new ArrayList<>();
-
+        // Lista para almacenar los movimientos posibles con sus grados de Warnsdorff
+        ArrayList<int[]> posiblesMovimientos = new ArrayList<>();
+        
+        // Intentar todos los movimientos posibles y calcular su "grado de Warnsdorff"
         for (int i = 0; i < 8; i++) {
             int nx = x + dx[i];
             int ny = y + dy[i];
-
             if (esValido(nx, ny)) {
-                int grado = contarGrado(nx, ny);
-                moves.add(new int[]{nx, ny, grado});
+                int grado = contarMovimientosDisponibles(nx, ny);
+                posiblesMovimientos.add(new int[]{nx, ny, grado});
             }
         }
 
-        // Ordenar por el grado (número de movimientos futuros posibles)
-        moves.sort(Comparator.comparingInt(a -> a[2]));
 
-        // Retornar solo coordenadas (sin el grado)
-        List<int[]> ordenados = new ArrayList<>();
-        for (int[] move : moves) {
-            ordenados.add(new int[]{move[0], move[1]});
+
+        // Ordenar los movimientos por grado de Warnsdorff (de menor a mayor)
+        posiblesMovimientos.sort((a, b) -> Integer.compare(a[2], b[2]));
+
+        // Intentar los movimientos en el orden de menor a mayor grado
+        for (int[] movimiento : posiblesMovimientos) {
+            int nx = movimiento[0];
+            int ny = movimiento[1];
+            tablero[nx][ny] = paso; // Marcar la casilla como visitada
+
+            // Llamada recursiva para el siguiente paso
+            backtrack(nx, ny, paso + 1);
+            
+            // Retroceder: desmarcar la casilla y continuar
+            tablero[nx][ny] = 0; 
         }
-
-        return ordenados;
     }
 
-    // Cuenta cuántos movimientos válidos hay desde (x, y)
-    static int contarGrado(int x, int y) {
+    // Cuenta movimientos válidos desde una casilla dada
+    static int contarMovimientosDisponibles(int x, int y) {
         int count = 0;
         for (int i = 0; i < 8; i++) {
             int nx = x + dx[i];
@@ -95,10 +89,31 @@ public class TodasLasSoluciones {
         return count;
     }
 
-    // Verifica que esté dentro del tablero y no visitado
+    // Verifica si la casilla está dentro del tablero y no ha sido visitada
     static boolean esValido(int x, int y) {
         return x >= 0 && y >= 0 && x < N && y < N && tablero[x][y] == 0;
     }
+
+    // Clona el tablero actual para guardar una solución
+    static int[][] clonarTablero() {
+        int[][] copia = new int[N][N];
+        for (int i = 0; i < N; i++) {
+            copia[i] = Arrays.copyOf(tablero[i], N);
+        }
+        return copia;
+    }
+
+    // Imprime el tablero en consola
+    static void imprimirTablero(int[][] tablero) {
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                if (tablero[i][j] == 0) {
+                    System.out.print(" . "); // Casilla no visitada
+                } else {
+                    System.out.printf("%2d ", tablero[i][j]); // Paso ya hecho
+                }
+            }
+            System.out.println();
+        }
+    }
 }
-
-

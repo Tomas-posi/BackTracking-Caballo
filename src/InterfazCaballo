@@ -1,0 +1,116 @@
+import javax.swing.*;
+import java.awt.*;
+import java.util.Arrays;
+import java.util.Random;
+
+public class InterfazCaballo extends JPanel {
+
+    static final int N = 8; // Tamaño del tablero
+    static int[][] tablero = new int[N][N];
+
+    static int[] dx = {-2, -1, 1, 2, 2, 1, -1, -2};
+    static int[] dy = {1, 2, 2, 1, -1, -2, -2, -1};
+
+    static int caballoX, caballoY;
+
+    static final int TAM_CASILLA = 80;
+
+    public static void main(String[] args) throws InterruptedException {
+        JFrame ventana = new JFrame("Recorrido del Caballo - Warnsdorff");
+        InterfazCaballo panel = new InterfazCaballo();
+
+        ventana.add(panel);
+        ventana.setSize(N * TAM_CASILLA + 16, N * TAM_CASILLA + 39);
+        ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        ventana.setLocationRelativeTo(null);
+        ventana.setVisible(true);
+
+        // Inicializar tablero
+        for (int i = 0; i < N; i++) Arrays.fill(tablero[i], 0);
+
+        // Posición inicial aleatoria
+        Random rand = new Random();
+        caballoX = rand.nextInt(N);
+        caballoY = rand.nextInt(N);
+        tablero[caballoX][caballoY] = 1;
+
+        panel.repaint();
+        Thread.sleep(500);
+
+        for (int paso = 2; paso <= N * N; paso++) {
+            int[] siguiente = siguienteMovimiento(caballoX, caballoY);
+            if (siguiente == null) {
+                JOptionPane.showMessageDialog(ventana, "No se encontró una solución completa.");
+                return;
+            }
+            caballoX = siguiente[0];
+            caballoY = siguiente[1];
+            tablero[caballoX][caballoY] = paso;
+            panel.repaint();
+            Thread.sleep(300); // Pausa entre movimientos
+        }
+
+        JOptionPane.showMessageDialog(ventana, "¡Recorrido completo encontrado!");
+    }
+
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        // Dibujar tablero
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                // Color de casillas estilo ajedrez
+                if ((i + j) % 2 == 0)
+                    g.setColor(Color.WHITE);
+                else
+                    g.setColor(Color.LIGHT_GRAY);
+                g.fillRect(j * TAM_CASILLA, i * TAM_CASILLA, TAM_CASILLA, TAM_CASILLA);
+
+                // Números de pasos
+                if (tablero[i][j] != 0) {
+                    g.setColor(Color.BLACK);
+                    g.setFont(new Font("Arial", Font.BOLD, 20));
+                    g.drawString(String.valueOf(tablero[i][j]),
+                            j * TAM_CASILLA + TAM_CASILLA / 2 - 10,
+                            i * TAM_CASILLA + TAM_CASILLA / 2 + 7);
+                }
+            }
+        }
+
+        // Dibujar al caballo
+        g.setColor(Color.RED);
+        g.fillOval(caballoY * TAM_CASILLA + 20, caballoX * TAM_CASILLA + 20, 40, 40);
+    }
+
+    // Heurística de Warnsdorff
+    static int[] siguienteMovimiento(int x, int y) {
+        int minGrado = 9;
+        int[] mejorMovimiento = null;
+
+        for (int i = 0; i < 8; i++) {
+            int nx = x + dx[i];
+            int ny = y + dy[i];
+            if (esValido(nx, ny)) {
+                int grado = contarMovimientosDisponibles(nx, ny);
+                if (grado < minGrado) {
+                    minGrado = grado;
+                    mejorMovimiento = new int[]{nx, ny};
+                }
+            }
+        }
+        return mejorMovimiento;
+    }
+
+    static int contarMovimientosDisponibles(int x, int y) {
+        int count = 0;
+        for (int i = 0; i < 8; i++) {
+            int nx = x + dx[i], ny = y + dy[i];
+            if (esValido(nx, ny)) count++;
+        }
+        return count;
+    }
+
+    static boolean esValido(int x, int y) {
+        return x >= 0 && y >= 0 && x < N && y < N && tablero[x][y] == 0;
+    }
+}

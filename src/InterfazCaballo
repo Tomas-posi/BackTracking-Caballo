@@ -1,34 +1,31 @@
 import javax.swing.*;
 import java.awt.*;
-import java.util.Arrays;
-import java.util.Random;
+import java.util.*;
 
-public class InterfazCaballo extends JPanel {
+public class UnaSolucionInterfaz extends JPanel {
 
-    static final int N = 8; // Tamaño del tablero
+    static final int N = 6; // Tamaño del tablero
     static int[][] tablero = new int[N][N];
+    static boolean encontrada = false;
 
     static int[] dx = {-2, -1, 1, 2, 2, 1, -1, -2};
     static int[] dy = {1, 2, 2, 1, -1, -2, -2, -1};
 
     static int caballoX, caballoY;
-
     static final int TAM_CASILLA = 80;
 
     public static void main(String[] args) throws InterruptedException {
-        JFrame ventana = new JFrame("Recorrido del Caballo - Warnsdorff");
-        InterfazCaballo panel = new InterfazCaballo();
-
+        JFrame ventana = new JFrame("Caballo - Una solución");
+        UnaSolucionInterfaz panel = new UnaSolucionInterfaz();
         ventana.add(panel);
         ventana.setSize(N * TAM_CASILLA + 16, N * TAM_CASILLA + 39);
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         ventana.setLocationRelativeTo(null);
         ventana.setVisible(true);
 
-        // Inicializar tablero
-        for (int i = 0; i < N; i++) Arrays.fill(tablero[i], 0);
+        for (int i = 0; i < N; i++)
+            Arrays.fill(tablero[i], 0);
 
-        // Posición inicial aleatoria
         Random rand = new Random();
         caballoX = rand.nextInt(N);
         caballoY = rand.nextInt(N);
@@ -37,68 +34,50 @@ public class InterfazCaballo extends JPanel {
         panel.repaint();
         Thread.sleep(500);
 
-        for (int paso = 2; paso <= N * N; paso++) {
-            int[] siguiente = siguienteMovimiento(caballoX, caballoY);
-            if (siguiente == null) {
-                JOptionPane.showMessageDialog(ventana, "No se encontró una solución completa.");
-                return;
-            }
-            caballoX = siguiente[0];
-            caballoY = siguiente[1];
-            tablero[caballoX][caballoY] = paso;
-            panel.repaint();
-            Thread.sleep(300); // Pausa entre movimientos
-        }
+        resolver(caballoX, caballoY, 2, panel);
 
-        JOptionPane.showMessageDialog(ventana, "¡Recorrido completo encontrado!");
+        if (encontrada) {
+            JOptionPane.showMessageDialog(ventana, "¡Se encontró una solución!");
+        } else {
+            JOptionPane.showMessageDialog(ventana, "No se encontró ninguna solución.");
+        }
     }
 
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        // Dibujar tablero
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                // Color de casillas estilo ajedrez
-                if ((i + j) % 2 == 0)
-                    g.setColor(Color.WHITE);
-                else
-                    g.setColor(Color.LIGHT_GRAY);
-                g.fillRect(j * TAM_CASILLA, i * TAM_CASILLA, TAM_CASILLA, TAM_CASILLA);
-
-                // Números de pasos
-                if (tablero[i][j] != 0) {
-                    g.setColor(Color.BLACK);
-                    g.setFont(new Font("Arial", Font.BOLD, 20));
-                    g.drawString(String.valueOf(tablero[i][j]),
-                            j * TAM_CASILLA + TAM_CASILLA / 2 - 10,
-                            i * TAM_CASILLA + TAM_CASILLA / 2 + 7);
-                }
-            }
+    static void resolver(int x, int y, int paso, UnaSolucionInterfaz panel) throws InterruptedException {
+        if (encontrada) return;
+        if (paso == N * N + 1) {
+            encontrada = true;
+            return;
         }
 
-        // Dibujar al caballo
-        g.setColor(Color.RED);
-        g.fillOval(caballoY * TAM_CASILLA + 20, caballoX * TAM_CASILLA + 20, 40, 40);
-    }
-
-    // Heurística de Warnsdorff
-    static int[] siguienteMovimiento(int x, int y) {
-        int minGrado = 9;
-        int[] mejorMovimiento = null;
-
+        ArrayList<int[]> movimientos = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
-            int nx = x + dx[i];
-            int ny = y + dy[i];
+            int nx = x + dx[i], ny = y + dy[i];
             if (esValido(nx, ny)) {
                 int grado = contarMovimientosDisponibles(nx, ny);
-                if (grado < minGrado) {
-                    minGrado = grado;
-                    mejorMovimiento = new int[]{nx, ny};
-                }
+                movimientos.add(new int[]{nx, ny, grado});
             }
         }
-        return mejorMovimiento;
+
+        movimientos.sort(Comparator.comparingInt(a -> a[2]));
+
+        for (int[] mov : movimientos) {
+            int nx = mov[0], ny = mov[1];
+            tablero[nx][ny] = paso;
+            caballoX = nx;
+            caballoY = ny;
+            panel.repaint();
+            Thread.sleep(300);
+            resolver(nx, ny, paso + 1, panel);
+            if (encontrada) return;
+            tablero[nx][ny] = 0;
+            panel.repaint();
+            Thread.sleep(100);
+        }
+    }
+
+    static boolean esValido(int x, int y) {
+        return x >= 0 && y >= 0 && x < N && y < N && tablero[x][y] == 0;
     }
 
     static int contarMovimientosDisponibles(int x, int y) {
@@ -110,7 +89,27 @@ public class InterfazCaballo extends JPanel {
         return count;
     }
 
-    static boolean esValido(int x, int y) {
-        return x >= 0 && y >= 0 && x < N && y < N && tablero[x][y] == 0;
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                g.setColor((i + j) % 2 == 0 ? Color.WHITE : Color.LIGHT_GRAY);
+                g.fillRect(j * TAM_CASILLA, i * TAM_CASILLA, TAM_CASILLA, TAM_CASILLA);
+
+                if (tablero[i][j] != 0) {
+                    g.setColor(Color.BLACK);
+                    g.setFont(new Font("Arial", Font.BOLD, 20));
+                    g.drawString(String.valueOf(tablero[i][j]),
+                        j * TAM_CASILLA + TAM_CASILLA / 2 - 10,
+                        i * TAM_CASILLA + TAM_CASILLA / 2 + 7);
+                }
+            }
+        }
+
+        // Dibujar al caballo
+        g.setColor(Color.RED);
+        g.fillOval(caballoY * TAM_CASILLA + 20, caballoX * TAM_CASILLA + 20, 40, 40);
     }
 }
+

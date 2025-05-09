@@ -1,0 +1,71 @@
+import java.util.*;
+public class TodasLasSolucionesConContador {
+
+    static final int N = 6; // Tamaño del tablero
+    static int[][] tablero = new int[N][N];
+    static int contador = 0;
+
+    // Movimientos posibles del caballo
+    static int[] dx = {-2, -1, 1, 2, 2, 1, -1, -2};
+    static int[] dy = {1, 2, 2, 1, -1, -2, -2, -1};
+
+    public static void main(String[] args) {
+        // Inicializar tablero
+        for (int i = 0; i < N; i++)
+            Arrays.fill(tablero[i], 0);
+        
+        // Posición inicial aleatoria
+        Random rand = new Random();
+        int x = 4;
+        int y = 1;
+        tablero[x][y] = 1;
+        System.out.println("Posicion inicial " + x+","+y);
+        // Comenzar el recorrido
+        backtrack(x, y, 2);
+
+        // Imprimir el resultado
+        System.out.println("Número total de soluciones encontradas: " + contador);
+    }
+
+    static void backtrack(int x, int y, int paso) {
+        if (paso == N * N + 1) {
+            contador++;
+            return;
+        }
+
+        ArrayList<int[]> posiblesMovimientos = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            int nx = x + dx[i];
+            int ny = y + dy[i];
+            if (esValido(nx, ny)) {
+                int grado = contarMovimientosDisponibles(nx, ny);
+                posiblesMovimientos.add(new int[]{nx, ny, grado});
+            }
+        }
+
+        posiblesMovimientos.sort((a, b) -> Integer.compare(a[2], b[2]));
+
+
+        for (int[] movimiento : posiblesMovimientos) {
+            int nx = movimiento[0];
+            int ny = movimiento[1];
+            tablero[nx][ny] = paso;
+            backtrack(nx, ny, paso + 1);
+            tablero[nx][ny] = 0; // retroceder
+        }
+    }
+
+    static int contarMovimientosDisponibles(int x, int y) {
+        int count = 0;
+        for (int i = 0; i < 8; i++) {
+            int nx = x + dx[i];
+            int ny = y + dy[i];
+            if (esValido(nx, ny)) count++;
+        }
+        return count;
+    }
+
+    static boolean esValido(int x, int y) {
+        return x >= 0 && y >= 0 && x < N && y < N && tablero[x][y] == 0;
+    }
+}

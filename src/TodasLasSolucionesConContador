@@ -16,8 +16,8 @@ public class TodasLasSolucionesConContador {
         
         // Posición inicial aleatoria
         Random rand = new Random();
-        int x = 4;
-        int y = 1;
+        int x = rand.nextInt(N);
+        int y = rand.nextInt(N);
         tablero[x][y] = 1;
         System.out.println("Posicion inicial " + x+","+y);
         // Comenzar el recorrido

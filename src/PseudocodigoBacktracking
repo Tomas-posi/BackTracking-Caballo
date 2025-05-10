@@ -1,0 +1,25 @@
+//**
+PSEUDOCOGIDO GENERAL
+función backtrack(estadoActual, paso):
+    si estadoActual es solución válida completa:
+        guardar o imprimir solución
+        regresar
+
+    para cada opción válida desde estadoActual:
+        aplicar opción → modificar estadoActual
+        backtrack(nuevo estadoActual, paso + 1)
+        deshacer opción → restaurar estadoActual (backtracking)
+**//
+
+//**
+APLICADO A NUESTRO PROBLEMA
+función backtrack(x, y, paso):
+    si paso == N*N + 1:
+        imprimir tablero
+        regresar
+
+    para cada movimiento válido (nx, ny) desde (x, y):
+        tablero[nx][ny] ← paso
+        backtrack(nx, ny, paso + 1)
+        tablero[nx][ny] ← 0  // retroceder
+**//

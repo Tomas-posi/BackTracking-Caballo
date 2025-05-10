@@ -1,7 +1,7 @@
 import java.util.*;
-public class TodasLasSolucionesConContador {
+public class TodasLasSolucionesContador {
 
-    static final int N = 6; // Tamaño del tablero
+    static final int N = 8; // Tamaño del tablero
     static int[][] tablero = new int[N][N];
     static int contador = 0;
 
@@ -19,7 +19,7 @@ public class TodasLasSolucionesConContador {
         int x = rand.nextInt(N);
         int y = rand.nextInt(N);
         tablero[x][y] = 1;
-        System.out.println("Posicion inicial " + x+","+y);
+        System.out.println("Posicion inicial " + x + "," + y);
         // Comenzar el recorrido
         backtrack(x, y, 2);
 
@@ -30,28 +30,38 @@ public class TodasLasSolucionesConContador {
     static void backtrack(int x, int y, int paso) {
         if (paso == N * N + 1) {
             contador++;
+            System.out.println("Solución encontrada:");
+            System.out.println("----------------------");
+            imprimirTablero(tablero);
+            System.out.println("----------------------");
             return;
         }
 
-        ArrayList<int[]> posiblesMovimientos = new ArrayList<>();
+        // Crear cubetas para grados del 0 al 8
+        ArrayList<int[]>[] cubetas = new ArrayList[9];
+        for (int i = 0; i <= 8; i++) {
+            cubetas[i] = new ArrayList<>();
+        }
+
+        // Clasificar movimientos en cubetas según su grado
         for (int i = 0; i < 8; i++) {
             int nx = x + dx[i];
             int ny = y + dy[i];
             if (esValido(nx, ny)) {
                 int grado = contarMovimientosDisponibles(nx, ny);
-                posiblesMovimientos.add(new int[]{nx, ny, grado});
+                cubetas[grado].add(new int[]{nx, ny});
             }
         }
 
-        posiblesMovimientos.sort((a, b) -> Integer.compare(a[2], b[2]));
-
-
-        for (int[] movimiento : posiblesMovimientos) {
-            int nx = movimiento[0];
-            int ny = movimiento[1];
-            tablero[nx][ny] = paso;
-            backtrack(nx, ny, paso + 1);
-            tablero[nx][ny] = 0; // retroceder
+        // Procesar los movimientos ordenados por grado
+        for (int grado = 0; grado <= 8; grado++) {
+            for (int[] movimiento : cubetas[grado]) {
+                int nx = movimiento[0];
+                int ny = movimiento[1];
+                tablero[nx][ny] = paso;
+                backtrack(nx, ny, paso + 1);
+                tablero[nx][ny] = 0; // Retroceder
+            }
         }
     }
 
@@ -67,5 +77,18 @@ public class TodasLasSolucionesConContador {
 
     static boolean esValido(int x, int y) {
         return x >= 0 && y >= 0 && x < N && y < N && tablero[x][y] == 0;
+    }
+    
+    static void imprimirTablero(int[][] tablero) {
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                if (tablero[i][j] == 0) {
+                    System.out.print(" . ");
+                } else {
+                    System.out.printf("%2d ", tablero[i][j]);
+                }
+            }
+            System.out.println();
+        }
     }
 }

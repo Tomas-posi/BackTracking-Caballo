@@ -2,95 +2,61 @@ import java.util.*;
 
 public class PrimeraSolucion {
 
-
-
-    static final int N = 8; // Tamaño del tablero
+    static final int N = 8;
     static int[][] tablero = new int[N][N];
 
-    // Movimientos posibles del caballo
     static int[] dx = {-2, -1, 1, 2, 2, 1, -1, -2};
     static int[] dy = {1, 2, 2, 1, -1, -2, -2, -1};
 
-    public static void main(String[] args) throws InterruptedException {
-        // Inicializar tablero a 0
+    public static void main(String[] args) {
         for (int i = 0; i < N; i++)
             Arrays.fill(tablero[i], 0);
 
-        // Posición inicial aleatoria
         Random rand = new Random();
         int x = rand.nextInt(N);
         int y = rand.nextInt(N);
-        tablero[x][y] = 1; // Primer paso
+        tablero[x][y] = 1;
 
-        // Hacer el recorrido
-        for (int paso = 2; paso <= N * N; paso++) {
-            int[] siguiente = siguienteMovimiento(x, y);
-            if (siguiente == null) {
-                System.out.println("No se encontró una solución completa.");
-                return;
-            }
-            x = siguiente[0];
-            y = siguiente[1];
-            tablero[x][y] = paso;
+        System.out.println("Posición inicial: " + (x+1) + "," + (y+1));
 
-            imprimirTablero(x, y);
-            Thread.sleep(0); // Pausa para simular animación
+        if (buscarPrimeraSolucion(x, y, 2)) {
+            System.out.println("¡Recorrido completo encontrado!");
+            imprimirTablero();
+        } else {
+            System.out.println("No se encontró una solución completa.");
         }
-
-        System.out.println("¡Recorrido completo encontrado!");
     }
 
-    // Encuentra el siguiente movimiento según Warnsdorff
-    static int[] siguienteMovimiento(int x, int y) {
-        int minGrado = 9;
-        int[] mejorMovimiento = null;
+    static boolean buscarPrimeraSolucion(int x, int y, int paso) {
+        if (paso == N * N + 1) return true;
 
         for (int i = 0; i < 8; i++) {
             int nx = x + dx[i];
             int ny = y + dy[i];
 
             if (esValido(nx, ny)) {
-                int grado = contarMovimientosDisponibles(nx, ny);
-                if (grado < minGrado) {
-                    minGrado = grado;
-                    mejorMovimiento = new int[]{nx, ny};
-                }
+                tablero[nx][ny] = paso;
+
+                if (buscarPrimeraSolucion(nx, ny, paso + 1)) return true;
+
+                tablero[nx][ny] = 0; // Backtrack
             }
         }
-        return mejorMovimiento;
+
+        return false;
     }
 
-    // Cuenta movimientos válidos desde una casilla dada
-    static int contarMovimientosDisponibles(int x, int y) {
-        int count = 0;
-        for (int i = 0; i < 8; i++) {
-            int nx = x + dx[i];
-            int ny = y + dy[i];
-            if (esValido(nx, ny)) count++;
-        }
-        return count;
-    }
-
-    // Verifica si la casilla está dentro del tablero y no ha sido visitada
     static boolean esValido(int x, int y) {
         return x >= 0 && y >= 0 && x < N && y < N && tablero[x][y] == 0;
     }
 
-    // Imprime el tablero en consola con efecto visual
-    static void imprimirTablero(int caballoX, int caballoY) {
-        System.out.println("\n======================");
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                if (i == caballoX && j == caballoY) {
-                    System.out.print(" o "); // Caballo actual
-                } else if (tablero[i][j] == 0) {
-                    System.out.print(" . "); // Casilla no visitada
-                } else {
-                    System.out.printf("%2d ", tablero[i][j]); // Paso ya hecho
-                }
+    static void imprimirTablero() {
+        System.out.println("\n======= TABLERO =======");
+        for (int[] fila : tablero) {
+            for (int val : fila) {
+                System.out.printf("%2d ", val);
             }
             System.out.println();
         }
     }
-
 }

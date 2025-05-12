@@ -1,5 +1,4 @@
-//**
-PSEUDOCOGIDO GENERAL
+PSEUDOCOGIDO GENERAL:
 función backtrack(estadoActual, paso):
     si estadoActual es solución válida completa:
         guardar o imprimir solución
@@ -9,9 +8,7 @@ función backtrack(estadoActual, paso):
         aplicar opción → modificar estadoActual
         backtrack(nuevo estadoActual, paso + 1)
         deshacer opción → restaurar estadoActual (backtracking)
-**//
 
-//**
 APLICADO A NUESTRO PROBLEMA
 función backtrack(x, y, paso):
     si paso == N*N + 1:
@@ -22,4 +19,16 @@ función backtrack(x, y, paso):
         tablero[nx][ny] ← paso
         backtrack(nx, ny, paso + 1)
         tablero[nx][ny] ← 0  // retroceder
-**//
+
+PROBLEMAS DEL BACKTRACKING:
+- Los algoritmos que hacen una búsqueda exhaustiva de la solución tienen tiempos de
+ejecución muy elevados. La complejidad es exponencial, puede ocurrir, que si no se
+ejecuta en un ordenador potente, este se bloquee.
+
+- El uso de la Heuristica de Warnsdorff para mejorar la eficiencia de el problema ayuda mucho, debido
+a que  prioriza los movimientos que dejan menos opciones disponibles hacia adelante. Al moverse primero hacia 
+las casillas más restringidas (con menor grado de libertad), se reduce la probabilidad de quedar bloqueado en etapas 
+posteriores del recorrido, evitando así explorar muchas ramas inútiles. Esta estrategia no garantiza encontrar una 
+solución, pero minimiza la necesidad de retroceder, lo que en la práctica acelera enormemente la búsqueda, especialmente en 
+tableros grandes.
+

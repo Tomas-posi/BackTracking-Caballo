@@ -1,0 +1,62 @@
+import javax.swing.*;
+import java.awt.*;
+
+public class InterfazCaballo extends JPanel {
+
+    private static final int TAM_CASILLA = 80;
+    private static final int TOTAL_PASOS = PrimeraSolucion.N * PrimeraSolucion.N;
+    private int pasoActual = 1;
+
+    public static void main(String[] args) {
+        PrimeraSolucion.iniciarSolucion(); // Genera el recorrido
+
+        JFrame ventana = new JFrame("Caballo animado");
+        InterfazCaballo panel = new InterfazCaballo();
+        ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        ventana.setSize(PrimeraSolucion.N * TAM_CASILLA + 16, PrimeraSolucion.N * TAM_CASILLA + 39);
+        ventana.setResizable(false);
+        ventana.add(panel);
+        ventana.setVisible(true);
+
+        // Timer para animar paso a paso
+        Timer timer = new Timer(800, e -> {
+            if (panel.pasoActual < TOTAL_PASOS) {
+                panel.pasoActual++;
+                panel.repaint();
+            } else {
+                ((Timer) e.getSource()).stop();
+            }
+        });
+        timer.start();
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g;
+
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        for (int fila = 0; fila < PrimeraSolucion.N; fila++) {
+            for (int col = 0; col < PrimeraSolucion.N; col++) {
+                boolean blanco = (fila + col) % 2 == 0;
+                g2.setColor(blanco ? new Color(240, 240, 240) : new Color(80, 80, 80));
+                g2.fillRect(col * TAM_CASILLA, fila * TAM_CASILLA, TAM_CASILLA, TAM_CASILLA);
+
+                int valor = PrimeraSolucion.tablero[fila][col];
+
+                if (valor > 0 && valor < pasoActual) {
+                    g2.setColor(new Color(0, 200, 0, 120));
+                    g2.fillOval(col * TAM_CASILLA + 20, fila * TAM_CASILLA + 20, TAM_CASILLA - 40, TAM_CASILLA - 40);
+                }
+
+                if (valor == pasoActual) {
+                    g2.setColor(new Color(34, 221, 34));
+                    g2.fillOval(col * TAM_CASILLA + 10, fila * TAM_CASILLA + 10, TAM_CASILLA - 20, TAM_CASILLA - 20);
+                    g2.setColor(Color.WHITE);
+                    g2.setFont(new Font("Arial", Font.BOLD, 22));
+                }
+            }
+        }
+    }
+}

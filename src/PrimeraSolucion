@@ -17,7 +17,7 @@ public class PrimeraSolucion {
 		int x = rand.nextInt(N);
 		int y = rand.nextInt(N);
 		tablero[x][y] = 1;
-		System.out.println("Posición inicial: " + (x + 1) + "," + (y + 1));
+		System.out.println("Posición inicial: " + x + "," + y);
 		
 		if (buscarPrimeraSolucion(x, y, 2)) {
 			System.out.println("¡Recorrido completo encontrado!");

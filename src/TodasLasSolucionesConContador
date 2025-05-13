@@ -1,94 +1,97 @@
 import java.util.*;
+
 public class TodasLasSolucionesContador {
 
-    static final int N = 8; // Tamaño del tablero
-    static int[][] tablero = new int[N][N];
-    static int contador = 0;
+    static final int N = 8; // Tamaño del tablero (8x8)
+    static int[][] tablero = new int[N][N]; // Tablero de ajedrez donde se marca el recorrido
+    static int contador = 0; // Contador de soluciones encontradas
 
-    // Movimientos posibles del caballo
-    static int[] dx = {-2, -1, 1, 2, 2, 1, -1, -2};
-    static int[] dy = {1, 2, 2, 1, -1, -2, -2, -1};
+    // Movimientos posibles del caballo en un tablero (en "L")
+    static int[] dx = {-2, -1, 1, 2, 2, 1, -1, -2}; // Desplazamientos en el eje x
+    static int[] dy = {1, 2, 2, 1, -1, -2, -2, -1}; // Desplazamientos en el eje y
 
     public static void main(String[] args) {
-        // Inicializar tablero
+        // Inicializa el tablero a 0, es decir, todas las casillas están vacías
         for (int i = 0; i < N; i++)
             Arrays.fill(tablero[i], 0);
         
-        // Posición inicial aleatoria
+        // Genera una posición inicial aleatoria para el caballo
         Random rand = new Random();
-        int x = rand.nextInt(N);
-        int y = rand.nextInt(N);
-        tablero[x][y] = 1;
-        System.out.println("Posicion inicial " + x + "," + y);
-        // Comenzar el recorrido
+        int x = rand.nextInt(N); // Posición aleatoria en x
+        int y = rand.nextInt(N); // Posición aleatoria en y
+        tablero[x][y] = 1; // El primer paso se marca con el número 1
+        System.out.println("Posicion inicial " + x + "," + y); // Imprime la posición inicial
+
+        // Comienza el recorrido usando el algoritmo de backtracking
         backtrack(x, y, 2);
 
-        // Imprimir el resultado
+        // Imprime el número total de soluciones encontradas
         System.out.println("Número total de soluciones encontradas: " + contador);
     }
 
+    // Función de backtracking para encontrar todas las soluciones
     static void backtrack(int x, int y, int paso) {
+        // Si se ha alcanzado el paso N*N+1, significa que se recorrieron todas las casillas
         if (paso == N * N + 1) {
-            contador++;
-            System.out.println("Solución encontrada:");
-            System.out.println("----------------------");
-            imprimirTablero(tablero);
-            System.out.println("----------------------");
-            return;
+            contador++; // Incrementa el contador de soluciones
+            return; // Finaliza la búsqueda de soluciones en esta rama
         }
 
-        // Crear cubetas para grados del 0 al 8
-        ArrayList<int[]>[] cubetas = new ArrayList[9];
+        // Crear una lista de 9 elementos para almacenar los movimientos según el grado de libertad
+        ArrayList<int[]>[] vecGrados = new ArrayList[9];
         for (int i = 0; i <= 8; i++) {
-            cubetas[i] = new ArrayList<>();
+            vecGrados[i] = new ArrayList<>();
         }
 
-        // Clasificar movimientos en cubetas según su grado
+        // Clasifica los movimientos posibles en las posiciones según su grado de libertad
         for (int i = 0; i < 8; i++) {
-            int nx = x + dx[i];
-            int ny = y + dy[i];
-            if (esValido(nx, ny)) {
-                int grado = contarMovimientosDisponibles(nx, ny);
-                cubetas[grado].add(new int[]{nx, ny});
+            int nx = x + dx[i]; // Nueva posición en x
+            int ny = y + dy[i]; // Nueva posición en y
+            if (esValido(nx, ny)) { // Si la nueva posición es válida
+                int grado = contarMovimientosDisponibles(nx, ny); // Contamos cuántos movimientos válidos tiene esa casilla
+                vecGrados[grado].add(new int[]{nx, ny}); // Añadimos la casilla a la cubeta correspondiente
             }
         }
 
-        // Procesar los movimientos ordenados por grado
+        // Procesamos los movimientos ordenados por su grado de libertad (de menor a mayor)
         for (int grado = 0; grado <= 8; grado++) {
-            for (int[] movimiento : cubetas[grado]) {
-                int nx = movimiento[0];
-                int ny = movimiento[1];
-                tablero[nx][ny] = paso;
-                backtrack(nx, ny, paso + 1);
-                tablero[nx][ny] = 0; // Retroceder
+            for (int[] movimiento : vecGrados[grado]) { // Recorre los movimientos de cada cubeta
+                int nx = movimiento[0]; // Nueva coordenada x
+                int ny = movimiento[1]; // Nueva coordenada y
+                tablero[nx][ny] = paso; // Marca la casilla con el número del paso
+                backtrack(nx, ny, paso + 1); // Llamada recursiva con la nueva posición y el siguiente paso
+                tablero[nx][ny] = 0; // Retroceso: desmarca la casilla para explorar otras posibilidades
             }
         }
     }
 
+    // Función que cuenta cuántos movimientos válidos tiene la casilla (x, y)
     static int contarMovimientosDisponibles(int x, int y) {
-        int count = 0;
+        int cuenta = 0; // Variable que cuenta los movimientos válidos
         for (int i = 0; i < 8; i++) {
-            int nx = x + dx[i];
-            int ny = y + dy[i];
-            if (esValido(nx, ny)) count++;
+            int nx = x + dx[i]; // Desplazamiento en x
+            int ny = y + dy[i]; // Desplazamiento en y
+            if (esValido(nx, ny)) cuenta++; // Si el movimiento es válido, incrementa el contador
         }
-        return count;
+        return cuenta; // Retorna el número de movimientos válidos
     }
 
+    // Función que verifica si una casilla (x, y) es válida (dentro del tablero y no visitada)
     static boolean esValido(int x, int y) {
-        return x >= 0 && y >= 0 && x < N && y < N && tablero[x][y] == 0;
+        return x >= 0 && y >= 0 && x < N && y < N && tablero[x][y] == 0; // Verifica los límites del tablero y que la casilla no haya sido visitada
     }
-    
+
+    // Función que imprime el tablero en la consola
     static void imprimirTablero(int[][] tablero) {
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
                 if (tablero[i][j] == 0) {
-                    System.out.print(" . ");
+                    System.out.print(" . "); 
                 } else {
-                    System.out.printf("%2d ", tablero[i][j]);
+                    System.out.printf("%2d ", tablero[i][j]); 
                 }
             }
-            System.out.println();
+            System.out.println(); 
         }
     }
 }

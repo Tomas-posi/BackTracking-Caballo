@@ -34,6 +34,10 @@ public class TodasLasSolucionesContador {
         // Si se ha alcanzado el paso N*N+1, significa que se recorrieron todas las casillas
         if (paso == N * N + 1) {
             contador++; // Incrementa el contador de soluciones
+            System.out.println("\n\nSolución encontrada:");
+            System.out.println("----------------------");
+            imprimirTablero(tablero); // Imprime el tablero con la solución
+            System.out.println("----------------------\n\n");
             return; // Finaliza la búsqueda de soluciones en esta rama
         }
 

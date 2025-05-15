@@ -1,19 +1,19 @@
 import javax.swing.*;
 import java.awt.*;
 
-public class InterfazCaballo extends JPanel {
+class InterfazCaballoWarnsdorff extends JPanel {
 
     private static final int TAM_CASILLA = 80;
-    private static final int TOTAL_PASOS = PrimeraSolucion.N * PrimeraSolucion.N;
+    private static final int TOTAL_PASOS = PrimeraSolucionWarnsdorff.N * PrimeraSolucionWarnsdorff.N;
     private int pasoActual = 1;
 
     public static void main(String[] args) {
-        PrimeraSolucion.iniciarSolucion(); // Genera el recorrido
+        PrimeraSolucionWarnsdorff.iniciarSolucion(); // Genera el recorrido usando Warnsdorff
 
-        JFrame ventana = new JFrame("Caballo animado");
-        InterfazCaballo panel = new InterfazCaballo();
+        JFrame ventana = new JFrame("Caballo animado - Warnsdorff");
+        InterfazCaballoWarnsdorff panel = new InterfazCaballoWarnsdorff();
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        ventana.setSize(PrimeraSolucion.N * TAM_CASILLA + 16, PrimeraSolucion.N * TAM_CASILLA + 39);
+        ventana.setSize(PrimeraSolucionWarnsdorff.N * TAM_CASILLA + 16, PrimeraSolucionWarnsdorff.N * TAM_CASILLA + 39);
         ventana.setResizable(false);
         ventana.add(panel);
         ventana.setVisible(true);
@@ -37,13 +37,13 @@ public class InterfazCaballo extends JPanel {
 
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        for (int fila = 0; fila < PrimeraSolucion.N; fila++) {
-            for (int col = 0; col < PrimeraSolucion.N; col++) {
+        for (int fila = 0; fila < PrimeraSolucionWarnsdorff.N; fila++) {
+            for (int col = 0; col < PrimeraSolucionWarnsdorff.N; col++) {
                 boolean blanco = (fila + col) % 2 == 0;
                 g2.setColor(blanco ? new Color(240, 240, 240) : new Color(80, 80, 80));
                 g2.fillRect(col * TAM_CASILLA, fila * TAM_CASILLA, TAM_CASILLA, TAM_CASILLA);
 
-                int valor = PrimeraSolucion.tablero[fila][col];
+                int valor = PrimeraSolucionWarnsdorff.tablero[fila][col];
 
                 if (valor > 0 && valor < pasoActual) {
                     g2.setColor(new Color(0, 200, 0, 120));
@@ -55,6 +55,13 @@ public class InterfazCaballo extends JPanel {
                     g2.fillOval(col * TAM_CASILLA + 10, fila * TAM_CASILLA + 10, TAM_CASILLA - 20, TAM_CASILLA - 20);
                     g2.setColor(Color.WHITE);
                     g2.setFont(new Font("Arial", Font.BOLD, 22));
+                    String texto = Integer.toString(valor);
+                    FontMetrics fm = g2.getFontMetrics();
+                    int anchoTexto = fm.stringWidth(texto);
+                    int altoTexto = fm.getAscent();
+                    int xTexto = col * TAM_CASILLA + (TAM_CASILLA - anchoTexto) / 2;
+                    int yTexto = fila * TAM_CASILLA + (TAM_CASILLA + altoTexto) / 2 - 4;
+                    g2.drawString(texto, xTexto, yTexto);
                 }
             }
         }

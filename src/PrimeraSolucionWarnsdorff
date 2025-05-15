@@ -2,22 +2,35 @@ import java.util.*;
 
 public class PrimeraSolucionWarnsdorff {
 
-    public static final int N = 6;
+    public static final int N = 7;
     public static int[][] tablero = new int[N][N];
     private static final int[] dx = {-2, -1, 1, 2, 2, 1, -1, -2};
     private static final int[] dy = {1, 2, 2, 1, -1, -2, -2, -1};
+
+    public static void main(String[] args) {
+        long inicioTiempo = System.currentTimeMillis(); // Tiempo inicial
+        iniciarSolucion();
+        long finTiempo = System.currentTimeMillis(); // Tiempo final
+
+        System.out.println("Tiempo de ejecución: " + (finTiempo - inicioTiempo) + " ms");
+    }
 
     public static void iniciarSolucion() {
         for (int i = 0; i < N; i++) {
             Arrays.fill(tablero[i], 0);
         }
 
-        Random rand = new Random();
-        int x = rand.nextInt(N);
-        int y = rand.nextInt(N);
+        int x = 1;
+        int y = 1;
         tablero[x][y] = 1;
 
-        buscarPrimeraSolucion(x, y, 2);
+        System.out.println("Posición inicial: (" + x + ", " + y + ")");
+
+        if (buscarPrimeraSolucion(x, y, 2)) {
+            System.out.println("\n¡Solución encontrada!");
+        } else {
+            System.out.println("\nNo se encontró una solución completa.");
+        }
     }
 
     private static boolean buscarPrimeraSolucion(int x, int y, int paso) {
@@ -27,7 +40,8 @@ public class PrimeraSolucionWarnsdorff {
         int mejorX = -1, mejorY = -1;
 
         // Buscar el movimiento con menor grado de libertad (menos opciones futuras)
-        for (int i = 0; i < 8; i++) {
+        int i = 0;
+        while (i < 8) {
             int nx = x + dx[i];
             int ny = y + dy[i];
 
@@ -39,6 +53,7 @@ public class PrimeraSolucionWarnsdorff {
                     mejorY = ny;
                 }
             }
+            i++;
         }
 
         if (mejorX == -1) {
@@ -48,19 +63,23 @@ public class PrimeraSolucionWarnsdorff {
 
         // Intentar primero el mejor movimiento según Warnsdorff
         tablero[mejorX][mejorY] = paso;
-        if (buscarPrimeraSolucion(mejorX, mejorY, paso + 1)) return true;
+        boolean encontrado = buscarPrimeraSolucion(mejorX, mejorY, paso + 1);
+        if (encontrado) return true;
         tablero[mejorX][mejorY] = 0; // Retroceder
 
         // Si falla, intenta los demás movimientos en cualquier orden
-        for (int i = 0; i < 8; i++) {
+        i = 0;
+        while (i < 8) {
             int nx = x + dx[i];
             int ny = y + dy[i];
 
             if (esValido(nx, ny) && !(nx == mejorX && ny == mejorY)) {
                 tablero[nx][ny] = paso;
-                if (buscarPrimeraSolucion(nx, ny, paso + 1)) return true;
+                encontrado = buscarPrimeraSolucion(nx, ny, paso + 1);
+                if (encontrado) return true;
                 tablero[nx][ny] = 0; // Retroceder
             }
+            i++;
         }
         return false;
     }
